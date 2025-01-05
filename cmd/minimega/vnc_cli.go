@@ -117,13 +117,42 @@ func cliVNCPlay(ns *Namespace, c *minicli.Command, resp *minicli.Response) error
 	}
 
 	return ns.Apply(target, func(vm VM, _ bool) (bool, error) {
-		kvm, ok := vm.(*KvmVM)
-		if !ok {
-			return false, nil
+		id := ""
+		rhost := ""
+
+		switch vm.(type) {
+		case *KvmVM:
+			kvm, ok := vm.(*KvmVM)
+			rhost = fmt.Sprintf("%v:%v", kvm.GetHost(), kvm.VNCPort)
+			if !ok {
+				return false, nil
+			}
+			id = kvm.GetName()
+		case *RKvmVM:
+			rkvm, ok := vm.(*RKvmVM)
+			rhost = fmt.Sprintf("%v:%v", rkvm.Vnc_host, rkvm.Vnc_port)
+			if !ok {
+				return false, nil
+			}
+			id = rkvm.GetName()
 		}
 
-		id := kvm.GetName()
-		rhost := fmt.Sprintf("%v:%v", kvm.GetHost(), kvm.VNCPort)
+		switch vm.(type) {
+		case *KvmVM:
+			kvm, ok := vm.(*KvmVM)
+			rhost = fmt.Sprintf("%v:%v", kvm.GetHost(), kvm.VNCPort)
+			if !ok {
+				return false, nil
+			}
+			id = kvm.GetName()
+		case *RKvmVM:
+			rkvm, ok := vm.(*RKvmVM)
+			rhost = fmt.Sprintf("%v:%v", rkvm.Vnc_host, rkvm.Vnc_port)
+			if !ok {
+				return false, nil
+			}
+			id = rkvm.GetName()
+		}
 
 		switch {
 		case c.BoolArgs["play"]:
@@ -169,13 +198,25 @@ func cliVNCRecord(ns *Namespace, c *minicli.Command, resp *minicli.Response) err
 		fname = filepath.Join(*f_iomBase, fname)
 	}
 
-	vm, err := ns.FindKvmVM(c.StringArgs["vm"])
-	if err != nil {
-		return err
+	id := ""
+	rhost := ""
+	vm := ns.FindVM(c.StringArgs["vm"])
+	switch vm.(type) {
+	case *KvmVM:
+		kvm, ok := vm.(*KvmVM)
+		rhost = fmt.Sprintf("%v:%v", kvm.GetHost(), kvm.VNCPort)
+		id = kvm.Name
+		if !ok {
+			return errors.New("Error finding VM")
+		}
+	case *RKvmVM:
+		rkvm, ok := vm.(*RKvmVM)
+		rhost = fmt.Sprintf("%v:%v", rkvm.Vnc_host, rkvm.Vnc_port)
+		id = rkvm.Name
+		if !ok {
+			return errors.New("Error finding VM")
+		}
 	}
-
-	id := vm.Name
-	rhost := fmt.Sprintf("%v:%v", vm.GetHost(), vm.VNCPort)
 
 	if c.BoolArgs["record"] {
 		if c.BoolArgs["kb"] {
@@ -186,9 +227,9 @@ func cliVNCRecord(ns *Namespace, c *minicli.Command, resp *minicli.Response) err
 	}
 
 	if c.BoolArgs["kb"] {
-		return ns.Recorder.StopKB(vm.Name)
+		return ns.Recorder.StopKB(id)
 	}
-	return ns.Recorder.StopFB(vm.Name)
+	return ns.Recorder.StopFB(id)
 }
 
 // List all active recordings and playbacks

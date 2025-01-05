@@ -31,6 +31,7 @@ const (
 	_ VMType = iota
 	KVM
 	CONTAINER
+	RKVM
 )
 
 type VM interface {
@@ -174,6 +175,8 @@ func NewVM(name, namespace string, vmType VMType, config VMConfig) (VM, error) {
 	switch vmType {
 	case KVM:
 		return NewKVM(name, namespace, config)
+	case RKVM:
+		return NewRKVM(name, namespace, config)
 	case CONTAINER:
 		return NewContainer(name, namespace, config)
 	}
@@ -256,6 +259,8 @@ func (s VMType) String() string {
 	switch s {
 	case KVM:
 		return "kvm"
+	case RKVM:
+		return "rkvm"
 	case CONTAINER:
 		return "container"
 	default:
@@ -267,6 +272,8 @@ func ParseVMType(s string) (VMType, error) {
 	switch s {
 	case "kvm":
 		return KVM, nil
+	case "rkvm":
+		return RKVM, nil
 	case "container":
 		return CONTAINER, nil
 	default:
@@ -1022,6 +1029,10 @@ func vmNotRunning(name string) error {
 
 func vmNotKVM(name string) error {
 	return fmt.Errorf("vm not KVM: %v", name)
+}
+
+func vmNotRKVM(name string) error {
+	return fmt.Errorf("vm not RKVM: %v", name)
 }
 
 func vmNotContainer(name string) error {

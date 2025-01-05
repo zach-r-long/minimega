@@ -284,6 +284,9 @@ func connectHandler(w http.ResponseWriter, r *http.Request, name string) {
 			port, _ = strconv.Atoi(vm["vnc_port"])
 		case "container":
 			port, _ = strconv.Atoi(vm["console_port"])
+		case "rkvm":
+			port, _ = strconv.Atoi(vm["vnc_port"])
+			log.Info("Connecting to " + host + ":" + strconv.Itoa(port))
 		default:
 			log.Info("unknown VM type: %v", vm["type"])
 			return
@@ -313,6 +316,8 @@ func connectHandler(w http.ResponseWriter, r *http.Request, name string) {
 		http.ServeFile(w, r, filepath.Join(*f_root, "vnc.html"))
 	case "container":
 		http.ServeFile(w, r, filepath.Join(*f_root, "terminal.html"))
+	case "rkvm":
+		http.ServeFile(w, r, filepath.Join(*f_root, "vnc.html"))
 	}
 }
 

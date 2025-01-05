@@ -35,7 +35,7 @@ info include:
 - state*     : one of (building, running, paused, quit, error)
 - uptime     : amount of time since the VM was launched
 - namespace* : namespace the VM belongs to
-- type*      : one of (kvm, container)
+- type*      : one of (kvm, container, rkvm)
 - uuid*      : QEMU system uuid
 - cc_active* : indicates whether cc is connected
 - vcpus      : the number of allocated CPUs
@@ -75,6 +75,10 @@ Additional fields are available for container-based VMs:
 - fifo         : number of fifo devices
 - console_port : port for console shim
 
+Additional fields are available for RKVM (Remote KVM via VNC) types:
+- vnc_host		: hostname or ip of the VNC server
+- vnc_port		: port for the VNC server
+
 The optional summary flag limits the columns to those denoted with a '*'.
 
 Examples:
@@ -101,6 +105,7 @@ supported VM types are:
 
 - kvm : QEMU-based vms
 - container: Linux containers
+- rkvm : Remote KVM via VNC
 
 If you supply a name instead of a number of VMs, one VM with that name will be
 launched. You may also supply a range expression to launch VMs with a specific
@@ -124,6 +129,7 @@ better allocate resources across the cluster.`,
 			"vm launch",
 			"vm launch <kvm,> <name or count> [config]",
 			"vm launch <container,> <name or count> [config]",
+			"vm launch <rkvm,> <name> [config]",
 		},
 		Call: wrapSimpleCLI(cliVMLaunch),
 	},
@@ -518,6 +524,7 @@ func init() {
 	gob.Register(VMs{})
 	gob.Register(&KvmVM{})
 	gob.Register(&ContainerVM{})
+	gob.Register(&RKvmVM{})
 }
 
 func cliVMApply(ns *Namespace, c *minicli.Command, resp *minicli.Response) error {

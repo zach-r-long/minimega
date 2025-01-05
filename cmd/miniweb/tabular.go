@@ -33,9 +33,10 @@ func tabularToMapCols(columns []string) tabularToMapper {
 	return func(resp *minicli.Response, row []string) map[string]string {
 		res := map[string]string{}
 		for _, column := range cols {
-			if strings.Contains(column, "host") {
+			if strings.Compare(column, "host") == 0 {
 				res["host"] = resp.Host
 				continue
+				
 			}
 
 			for i, header := range resp.Header {

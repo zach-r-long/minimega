@@ -26,10 +26,15 @@ func connectWsHandler(vmType, host string, port int) func(*websocket.Conn) {
 		case "container":
 			// See above. The javascript terminal needs it to be a TextFrame.
 			ws.PayloadType = websocket.TextFrame
+		case "rkvm":
+			// Undocumented "feature" of websocket -- need to set to
+			// PayloadType in order for a direct io.Copy to work.
+			ws.PayloadType = websocket.BinaryFrame
 		}
 
 		// connect to the remote host
 		rhost := fmt.Sprintf("%v:%v", host, port)
+		log.Info("connecting to %v", rhost)
 		remote, err := net.Dial("tcp", rhost)
 		if err != nil {
 			log.Errorln(err)
